@@ -27,7 +27,7 @@ public class Solver {
                     for (byte blockId : blockIds) {
                         if (chunk.doesPaletteContain(blockId)) {
                             countSearchedChunks++;
-                            solveChunk(region, chunk, startX, startY, startZ, blockId);
+                            solveChunk(region, startX, startY, startZ, blockId);
                         }
                     }
                 }
@@ -36,11 +36,14 @@ public class Solver {
         return countSearchedChunks;
     }
 
-    public void solveChunk(Region region, SubChunk chunk, short startX, short startY, short startZ, byte blockId) {
+    public void solveChunk(Region region, short startX, short startY, short startZ, byte blockId) {
         positions.clear(); // TODO: Remove this for faster cross-chunk scans
-        for (short x = startX; x < startX + 16; x++) {
-            for (short y = startY; y < startY + 16; y++) {
-                for (short z = startZ; z < startZ + 16; z++) {
+        int chunkMaxX = startX + 16;
+        int chunkMaxY = startY + 16;
+        int chunkMaxZ = startZ + 16;
+        for (short x = startX; x < chunkMaxX; x++) {
+            for (short y = startY; y < chunkMaxY; y++) {
+                for (short z = startZ; z < chunkMaxZ; z++) {
                     int pos = PosUtil.toInt(x, y, z);
                     if (positions.contains(pos)) {
                         continue;
@@ -71,7 +74,7 @@ public class Solver {
                             c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)), Direction.NORTH);
                         }
                     });
-                    if (size > 0) {
+                    if (size > 12) {
                         analyzeGroup();
                     }
                 }
@@ -118,7 +121,6 @@ public class Solver {
             int height = bounds.getHeight();
             int depth = bounds.getDepth();
 
-            //System.out.println("width: " + width + ", height: " + height + ", depth: " + depth);
             // 1. Ensure two sides are the same size
             Axis ignoreAxis;
             if (width == height) {
