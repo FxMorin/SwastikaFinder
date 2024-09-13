@@ -39,7 +39,7 @@ public class Main {
         System.out.println("Test #1");
         test1(region);
         System.out.println("Test #2");
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 50; i++) {
             test2(region);
         }
         //test2(region);
