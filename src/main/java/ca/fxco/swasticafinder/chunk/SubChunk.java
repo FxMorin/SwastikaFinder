@@ -62,18 +62,5 @@ public class SubChunk {
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = (byte) random.nextInt(20);
         }
-        /*for (int i = 0, len = bytes.length; i < len;) {
-            for (int rnd = random.nextInt(),
-                 n = Math.min(len - i, Integer.SIZE / Byte.SIZE);
-                 n-- > 0; rnd >>= Byte.SIZE
-            ) {
-                byte b = (byte) rnd;
-                if (b < 0) { // Positive only
-                    bytes[i++] = (byte) (b + 128);
-                } else {
-                    bytes[i++] = b;
-                }
-            }
-        }*/
     }
 }

@@ -44,37 +44,7 @@ public class Solver {
         for (short x = startX; x < chunkMaxX; x++) {
             for (short y = startY; y < chunkMaxY; y++) {
                 for (short z = startZ; z < chunkMaxZ; z++) {
-                    int pos = PosUtil.toInt(x, y, z);
-                    if (positions.contains(pos)) {
-                        continue;
-                    }
-                    currentGroup.clear();
-                    int size = optimizedBFT(positions, pos, s -> region.getBlock(s) == blockId, (a, c, d) -> {
-                        short nextX = PosUtil.getX(a);
-                        short nextY = PosUtil.getY(a);
-                        short nextZ = PosUtil.getZ(a);
-                        currentGroup.add(a);
-
-                        if (nextX > 0 && d != Direction.EAST) {
-                            c.accept(PosUtil.toInt((short) (nextX - 1), nextY, nextZ), Direction.WEST);
-                        }
-                        if (nextY > 0 && d != Direction.UP) {
-                            c.accept(PosUtil.toInt(nextX, (short) (nextY - 1), nextZ), Direction.DOWN);
-                        }
-                        if (nextZ > 0 && d != Direction.NORTH) {
-                            c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ - 1)), Direction.SOUTH);
-                        }
-                        if (nextX < 254 && d != Direction.WEST) {
-                            c.accept(PosUtil.toInt((short) (nextX + 1), nextY, nextZ), Direction.EAST);
-                        }
-                        if (nextY < 254 && d != Direction.DOWN) {
-                            c.accept(PosUtil.toInt(nextX, (short) (nextY + 1), nextZ), Direction.UP);
-                        }
-                        if (nextZ < 254 && d != Direction.SOUTH) {
-                            c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)), Direction.NORTH);
-                        }
-                    });
-                    if (size > 12) {
+                    if (optimizedBFT(region, x, y, z, blockId) > 12) {
                         analyzeGroup();
                     }
                 }
@@ -82,22 +52,45 @@ public class Solver {
         }
     }
 
-    private int optimizedBFT(IntSet positions, int startPos, IntPredicate isValid, ActionConsumer action) {
+    private int optimizedBFT(Region region, short x, short y, short z, byte blockId) {
+        int startPos = PosUtil.toInt(x, y, z);
+        if (positions.contains(startPos)) {
+            return 0;
+        }
+        currentGroup.clear();
         queue.clear();
-        queue.add(CarriedData.of(startPos, (short) 0, null));
+        queue.add(new CarriedData(startPos, (short) 0, null));
         int count = 0;
 
         while(!queue.isEmpty()) {
             CarriedData pair = queue.poll();
             int pos = pair.getKey();
-            if (positions.add(pos)) {
-                if (isValid.test(pos)) {
-                    count++;
-                    action.accept(
-                            pos,
-                            (newPos, dir) -> queue.add(CarriedData.of(newPos, (short) (pair.getValue() + 1), dir)),
-                            pair.getDirection()
-                    );
+            if (positions.add(pos) && region.getBlock(pos) == blockId) {
+                count++;
+                short nextX = PosUtil.getX(pos);
+                short nextY = PosUtil.getY(pos);
+                short nextZ = PosUtil.getZ(pos);
+                currentGroup.add(pos);
+
+                Direction dir = pair.getDirection();
+                short newDepth = (short) (pair.getValue() + 1);
+                if (dir != Direction.EAST && nextX > 0) {
+                    queue.add(new CarriedData(PosUtil.toInt((short) (nextX - 1), nextY, nextZ), newDepth, Direction.WEST));
+                }
+                if (dir != Direction.UP && nextY > 0) {
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, (short) (nextY - 1), nextZ), newDepth, Direction.DOWN));
+                }
+                if (dir != Direction.NORTH && nextZ > 0) {
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, nextY, (short) (nextZ - 1)), newDepth, Direction.SOUTH));
+                }
+                if (dir != Direction.WEST && nextX < 254) {
+                    queue.add(new CarriedData(PosUtil.toInt((short) (nextX + 1), nextY, nextZ), newDepth, Direction.EAST));
+                }
+                if (dir != Direction.DOWN && nextY < 254) {
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, (short) (nextY + 1), nextZ), newDepth, Direction.UP));
+                }
+                if (dir != Direction.SOUTH && nextZ < 254) {
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)), newDepth, Direction.NORTH));
                 }
             }
         }
@@ -245,22 +238,6 @@ public class Solver {
         public Direction getDirection() {
             return direction;
         }
-
-        public static CarriedData of(int key, short value, Direction direction) {
-            return new CarriedData(key, value, direction);
-        }
-    }
-
-    @FunctionalInterface
-    private interface ActionConsumer {
-
-        void accept(int i, IntDirectionConsumer intConsumer, Direction from);
-    }
-
-    @FunctionalInterface
-    private interface IntDirectionConsumer {
-
-        void accept(int i, Direction from);
     }
 
     private enum Direction {
