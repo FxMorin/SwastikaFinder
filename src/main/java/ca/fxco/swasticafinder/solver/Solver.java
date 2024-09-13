@@ -2,7 +2,6 @@ package ca.fxco.swasticafinder.solver;
 
 import ca.fxco.swasticafinder.chunk.Region;
 import ca.fxco.swasticafinder.chunk.SubChunk;
-import ca.fxco.swasticafinder.primitive.IntIntConsumer;
 import ca.fxco.swasticafinder.util.AABB;
 import ca.fxco.swasticafinder.util.PosUtil;
 import it.unimi.dsi.fastutil.ints.*;
@@ -10,11 +9,9 @@ import it.unimi.dsi.fastutil.ints.*;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-import static ca.fxco.swasticafinder.Main.MAX_DEPTH;
-
 public class Solver {
 
-    private final Queue<IntShortImmutablePair> queue = new ArrayDeque<>();
+    private final Queue<CarriedData> queue = new ArrayDeque<>();
     private final IntSet positions = new IntOpenHashSet(40);
     private final IntSet currentGroup = new IntOpenHashSet(18);
 
@@ -30,7 +27,7 @@ public class Solver {
                     for (byte blockId : blockIds) {
                         if (chunk.doesPaletteContain(blockId)) {
                             countSearchedChunks++;
-                            solveChunk(region, startX, startY, startZ, blockId);
+                            solveChunk(region, chunk, startX, startY, startZ, blockId);
                         }
                     }
                 }
@@ -39,7 +36,7 @@ public class Solver {
         return countSearchedChunks;
     }
 
-    public void solveChunk(Region region, short startX, short startY, short startZ, byte blockId) {
+    public void solveChunk(Region region, SubChunk chunk, short startX, short startY, short startZ, byte blockId) {
         positions.clear(); // TODO: Remove this for faster cross-chunk scans
         for (short x = startX; x < startX + 16; x++) {
             for (short y = startY; y < startY + 16; y++) {
@@ -49,60 +46,55 @@ public class Solver {
                         continue;
                     }
                     currentGroup.clear();
-                    int size = optimizedBFT(positions, pos, MAX_DEPTH, s -> region.getBlock(s) == blockId, (a, c) -> {
+                    int size = optimizedBFT(positions, pos, s -> region.getBlock(s) == blockId, (a, c, d) -> {
                         short nextX = PosUtil.getX(a);
                         short nextY = PosUtil.getY(a);
                         short nextZ = PosUtil.getZ(a);
                         currentGroup.add(a);
 
-                        if (nextX > 0) {
-                            c.accept(PosUtil.toInt((short) (nextX - 1), nextY, nextZ));
+                        if (nextX > 0 && d != Direction.EAST) {
+                            c.accept(PosUtil.toInt((short) (nextX - 1), nextY, nextZ), Direction.WEST);
                         }
-                        if (nextY > 0) {
-                            c.accept(PosUtil.toInt(nextX, (short) (nextY - 1), nextZ));
+                        if (nextY > 0 && d != Direction.UP) {
+                            c.accept(PosUtil.toInt(nextX, (short) (nextY - 1), nextZ), Direction.DOWN);
                         }
-                        if (nextZ > 0) {
-                            c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ - 1)));
+                        if (nextZ > 0 && d != Direction.NORTH) {
+                            c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ - 1)), Direction.SOUTH);
                         }
-                        if (nextX < 254) {
-                            c.accept(PosUtil.toInt((short) (nextX + 1), nextY, nextZ));
+                        if (nextX < 254 && d != Direction.WEST) {
+                            c.accept(PosUtil.toInt((short) (nextX + 1), nextY, nextZ), Direction.EAST);
                         }
-                        if (nextY < 254) {
-                            c.accept(PosUtil.toInt(nextX, (short) (nextY + 1), nextZ));
+                        if (nextY < 254 && d != Direction.DOWN) {
+                            c.accept(PosUtil.toInt(nextX, (short) (nextY + 1), nextZ), Direction.UP);
                         }
-                        if (nextZ < 254) {
-                            c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)));
+                        if (nextZ < 254 && d != Direction.SOUTH) {
+                            c.accept(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)), Direction.NORTH);
                         }
                     });
-                    if (size > 15) {
+                    if (size > 0) {
                         analyzeGroup();
                     }
-                    /*if (size == 17) {
-                        System.out.println("Found match! - [" + x + ", " + y + ", " + z + "]");
-                    }*/
                 }
             }
         }
     }
 
-    private int optimizedBFT(IntSet positions, int startPos, int depthLimit,
-                             IntPredicate isValid, IntIntConsumer action) {
+    private int optimizedBFT(IntSet positions, int startPos, IntPredicate isValid, ActionConsumer action) {
         queue.clear();
-        queue.add(IntShortImmutablePair.of(startPos, (short) 0));
+        queue.add(CarriedData.of(startPos, (short) 0, null));
         int count = 0;
 
         while(!queue.isEmpty()) {
-            IntShortImmutablePair pair = queue.poll();
-            int pos = pair.firstInt();
-            short depth = pair.secondShort();
+            CarriedData pair = queue.poll();
+            int pos = pair.getKey();
             if (positions.add(pos)) {
-                if (depth >= depthLimit) {
-                    // Early exit
-                    return count;
-                }
                 if (isValid.test(pos)) {
                     count++;
-                    action.accept(pos, newPos -> queue.add(IntShortImmutablePair.of(newPos, (short) (depth + 1))));
+                    action.accept(
+                            pos,
+                            (newPos, dir) -> queue.add(CarriedData.of(newPos, (short) (pair.getValue() + 1), dir)),
+                            pair.getDirection()
+                    );
                 }
             }
         }
@@ -126,7 +118,7 @@ public class Solver {
             int height = bounds.getHeight();
             int depth = bounds.getDepth();
 
-            System.out.println("width: " + width + ", height: " + height + ", depth: " + depth);
+            //System.out.println("width: " + width + ", height: " + height + ", depth: " + depth);
             // 1. Ensure two sides are the same size
             Axis ignoreAxis;
             if (width == height) {
@@ -143,15 +135,12 @@ public class Solver {
             int centerY = bounds.getMinY() + height / 2;
             int centerZ = bounds.getMinZ() + depth / 2;
             boolean crossExists = checkCross(centerX, centerY, centerZ, ignoreAxis);
-            System.out.println("centerX: " + centerX + ", centerY: " + centerY + ", centerZ: " + centerZ + ", crossExists: " + crossExists);
             if (crossExists) {
                 // 3. Check that each arm has a right angle at the end (going right)
                 boolean rightAngleAtEnds = checkRightAnglesAtEnds(centerX, centerY, centerZ, width, height, depth, ignoreAxis);
                 if (rightAngleAtEnds) {
-                    // 4. Ensure all sides are the same size
-                    //if (width == height && height == depth) {
-                        System.out.println("Found a valid pattern!");
-                    //}
+                    // TODO 4. Ensure all sides are the same size
+                    System.out.println("Found a valid pattern!");
                 }
             }
         }
@@ -229,6 +218,51 @@ public class Solver {
                 // Right angle along the Z-axis means we check the block in front (+Z) or behind (-Z)
                     currentGroup.contains(PosUtil.toInt((short) x, (short) y, (short) (z + 1))) || currentGroup.contains(PosUtil.toInt((short) x, (short) y, (short) (z - 1)));
         };
+    }
+
+    private static class CarriedData {
+
+        private final int key;
+        private final short value;
+        private final Direction direction;
+
+        public CarriedData(int key, short value, Direction direction) {
+            this.key = key;
+            this.value = value;
+            this.direction = direction;
+        }
+
+        public int getKey() {
+            return key;
+        }
+
+        public short getValue() {
+            return value;
+        }
+
+        public Direction getDirection() {
+            return direction;
+        }
+
+        public static CarriedData of(int key, short value, Direction direction) {
+            return new CarriedData(key, value, direction);
+        }
+    }
+
+    @FunctionalInterface
+    private interface ActionConsumer {
+
+        void accept(int i, IntDirectionConsumer intConsumer, Direction from);
+    }
+
+    @FunctionalInterface
+    private interface IntDirectionConsumer {
+
+        void accept(int i, Direction from);
+    }
+
+    private enum Direction {
+        NORTH, EAST, SOUTH, WEST, UP, DOWN
     }
 
     private enum Axis {
