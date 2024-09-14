@@ -61,7 +61,7 @@ public class Solver {
         byte chunkY = (byte) (y >> 4);
         byte chunkZ = (byte) (z >> 4);
         currentGroup.clear();
-        queue.add(new CarriedData(startPos, (short) 0, null));
+        queue.add(new CarriedData(startPos, null));
         int count = 0;
 
         while(!queue.isEmpty()) {
@@ -86,24 +86,23 @@ public class Solver {
                 currentGroup.add(pos);
 
                 Direction dir = pair.getDirection();
-                short newDepth = (short) (pair.getValue() + 1);
                 if (dir != Direction.EAST && nextX > 0) {
-                    queue.add(new CarriedData(PosUtil.toInt((short) (nextX - 1), nextY, nextZ), newDepth, Direction.WEST));
+                    queue.add(new CarriedData(PosUtil.toInt((short) (nextX - 1), nextY, nextZ), Direction.WEST));
                 }
                 if (dir != Direction.UP && nextY > 0) {
-                    queue.add(new CarriedData(PosUtil.toInt(nextX, (short) (nextY - 1), nextZ), newDepth, Direction.DOWN));
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, (short) (nextY - 1), nextZ), Direction.DOWN));
                 }
                 if (dir != Direction.NORTH && nextZ > 0) {
-                    queue.add(new CarriedData(PosUtil.toInt(nextX, nextY, (short) (nextZ - 1)), newDepth, Direction.SOUTH));
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, nextY, (short) (nextZ - 1)), Direction.SOUTH));
                 }
                 if (dir != Direction.WEST && nextX < 254) {
-                    queue.add(new CarriedData(PosUtil.toInt((short) (nextX + 1), nextY, nextZ), newDepth, Direction.EAST));
+                    queue.add(new CarriedData(PosUtil.toInt((short) (nextX + 1), nextY, nextZ), Direction.EAST));
                 }
                 if (dir != Direction.DOWN && nextY < 254) {
-                    queue.add(new CarriedData(PosUtil.toInt(nextX, (short) (nextY + 1), nextZ), newDepth, Direction.UP));
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, (short) (nextY + 1), nextZ), Direction.UP));
                 }
                 if (dir != Direction.SOUTH && nextZ < 254) {
-                    queue.add(new CarriedData(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)), newDepth, Direction.NORTH));
+                    queue.add(new CarriedData(PosUtil.toInt(nextX, nextY, (short) (nextZ + 1)), Direction.NORTH));
                 }
             }
         }
@@ -231,21 +230,15 @@ public class Solver {
     private static class CarriedData {
 
         private final int key;
-        private final short value;
         private final Direction direction;
 
-        public CarriedData(int key, short value, Direction direction) {
+        public CarriedData(int key, Direction direction) {
             this.key = key;
-            this.value = value;
             this.direction = direction;
         }
 
         public int getKey() {
             return key;
-        }
-
-        public short getValue() {
-            return value;
         }
 
         public Direction getDirection() {
