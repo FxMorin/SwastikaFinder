@@ -65,11 +65,18 @@ public class Solver {
         while(!queue.isEmpty()) {
             CarriedData pair = queue.poll();
             int pos = pair.getKey();
-            if (positions.add(pos) && region.getBlock(pos) == blockId) {
-                count++;
+            if (positions.add(pos)) {
                 short nextX = PosUtil.getX(pos);
                 short nextY = PosUtil.getY(pos);
                 short nextZ = PosUtil.getZ(pos);
+                byte nextChunkX = (byte) (nextX >> 4);
+                byte nextChunkY = (byte) (nextY >> 4);
+                byte nextChunkZ = (byte) (nextZ >> 4);
+                SubChunk nextChunk = region.getChunk(nextChunkX, nextChunkY, nextChunkZ);
+                if (nextChunk.getBlock((byte) (nextX & 15), (byte) (nextY & 15), (byte) (nextZ & 15)) != blockId) {
+                    continue;
+                }
+                count++;
                 currentGroup.add(pos);
 
                 Direction dir = pair.getDirection();
