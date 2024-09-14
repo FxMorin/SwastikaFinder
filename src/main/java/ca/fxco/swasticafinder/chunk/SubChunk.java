@@ -30,12 +30,12 @@ public class SubChunk {
     }
 
     public void setBlock(byte x, byte y, byte z, byte blockId) {
-        data[(x & 15) + ((y & 15) << 4) + ((z & 15) << 8)] = blockId;
+        data[x + (y << 4) + (z << 8)] = blockId;
         palette[blockId] = true;
     }
 
     public byte getBlock(byte x, byte y, byte z) {
-        return data[(x & 15) + ((y & 15) << 4) + ((z & 15) << 8)];
+        return data[x + (y << 4) + (z << 8)];
     }
 
     private void populate(Random random) {
