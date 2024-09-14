@@ -57,8 +57,10 @@ public class Solver {
         if (positions.contains(startPos)) {
             return 0;
         }
+        byte chunkX = (byte) (x >> 4);
+        byte chunkY = (byte) (y >> 4);
+        byte chunkZ = (byte) (z >> 4);
         currentGroup.clear();
-        queue.clear();
         queue.add(new CarriedData(startPos, (short) 0, null));
         int count = 0;
 
@@ -72,6 +74,10 @@ public class Solver {
                 byte nextChunkX = (byte) (nextX >> 4);
                 byte nextChunkY = (byte) (nextY >> 4);
                 byte nextChunkZ = (byte) (nextZ >> 4);
+                if (nextChunkX < chunkX || nextChunkY < chunkY || nextChunkZ < chunkZ) {
+                    queue.clear();
+                    return 0;
+                }
                 SubChunk nextChunk = region.getChunk(nextChunkX, nextChunkY, nextChunkZ);
                 if (nextChunk.getBlock((byte) (nextX & 15), (byte) (nextY & 15), (byte) (nextZ & 15)) != blockId) {
                     continue;
