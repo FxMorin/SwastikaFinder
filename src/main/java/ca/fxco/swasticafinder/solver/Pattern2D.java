@@ -12,10 +12,6 @@ public class Pattern2D {
         int maxThickness = grid.length - 4;
         for (int g = 0; g < maxThickness; g++) {
             if (!grid[center + evenOffset + g][center + evenOffset + g]) {
-                // Test if this is an illegal thickness for an early exit
-                if (g == maxThickness - 1 && grid[center + evenOffset + g + 1][center + evenOffset + g + 1]) {
-                    return false;
-                }
                 thickness = g;
                 break;
             }

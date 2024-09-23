@@ -65,13 +65,13 @@ public class ChunkSolver {
                 byte nextChunkX = (byte) (nextX >> 4);
                 byte nextChunkY = (byte) (nextY >> 4);
                 byte nextChunkZ = (byte) (nextZ >> 4);
-                if (nextChunkX < chunkX || nextChunkY < chunkY || nextChunkZ < chunkZ) {
-                    queue.clear();
-                    return 0;
-                }
                 SubChunk nextChunk = region.getChunk(nextChunkX, nextChunkY, nextChunkZ);
                 if (nextChunk.getBlock((byte) (nextX & 15), (byte) (nextY & 15), (byte) (nextZ & 15)) != blockId) {
                     continue;
+                }
+                if (nextChunkX < chunkX || nextChunkY < chunkY || nextChunkZ < chunkZ) {
+                    queue.clear();
+                    return 0;
                 }
                 count++;
                 currentGroup.add(pos);
@@ -114,109 +114,44 @@ public class ChunkSolver {
         }
 
         if (bounds != null) {
-            int width = bounds.getWidth();
-            int height = bounds.getHeight();
-            int depth = bounds.getDepth();
+            int width = bounds.getWidth() + 1;
+            int height = bounds.getHeight() + 1;
+            int depth = bounds.getDepth() + 1;
 
-            // 1. Ensure two sides are the same size
-            Axis ignoreAxis;
+            // Convert 3D plane to normalized 2D plane
+            boolean[][] grid;
             if (width == height) {
-                ignoreAxis = Axis.Z;
+                int minX = bounds.getMinX();
+                int minY = bounds.getMinY();
+                grid = new boolean[width][width];
+                for (int pos : currentGroup) {
+                    grid[PosUtil.getX(pos) - minX][PosUtil.getY(pos) - minY] = true;
+                }
             } else if (width == depth) {
-                ignoreAxis = Axis.Y;
+                int minX = bounds.getMinX();
+                int minZ = bounds.getMinZ();
+                grid = new boolean[width][width];
+                for (int pos : currentGroup) {
+                    grid[PosUtil.getX(pos) - minX][PosUtil.getZ(pos) - minZ] = true;
+                }
             } else if (height == depth) {
-                ignoreAxis = Axis.X;
+                int minY = bounds.getMinY();
+                int minZ = bounds.getMinZ();
+                grid = new boolean[depth][depth];
+                for (int pos : currentGroup) {
+                    grid[PosUtil.getZ(pos) - minZ][PosUtil.getY(pos) - minY] = true;
+                }
             } else {
                 return;
             }
-            // 2. Check if there's a cross in the center
-            int centerX = bounds.getMinX() + width / 2;
-            int centerY = bounds.getMinY() + height / 2;
-            int centerZ = bounds.getMinZ() + depth / 2;
-            boolean crossExists = checkCross(centerX, centerY, centerZ, ignoreAxis);
-            if (crossExists) {
-                // 3. Check that each arm has a right angle at the end (going right)
-                boolean rightAngleAtEnds = checkRightAnglesAtEnds(centerX, centerY, centerZ, width, height, depth, ignoreAxis);
-                if (rightAngleAtEnds) {
-                    // TODO 4. Ensure all sides are the same size
-                    System.out.println("Found a valid pattern!");
-                }
+            if (Pattern2D.solveSwastika2D(grid, currentGroup.size())) {
+                System.out.println("Found");
             }
         }
     }
 
-    // Helper method to check if a cross exists at the center
-    private boolean checkCross(int centerX, int centerY, int centerZ, Axis ignore) {
-        if (ignore == Axis.Z) {
-            return currentGroup.contains(PosUtil.toInt((short) (centerX - 1), (short) centerY, (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) (centerX + 1), (short) centerY, (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) (centerY - 1), (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) (centerY + 1), (short) centerZ));
-        } else if (ignore == Axis.X) {
-            return currentGroup.contains(PosUtil.toInt((short) centerX, (short) (centerY - 1), (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) (centerY + 1), (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) centerY, (short) (centerZ - 1))) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) centerY, (short) (centerZ + 1)));
-        } else if (ignore == Axis.Y) {
-            return currentGroup.contains(PosUtil.toInt((short) (centerX - 1), (short) centerY, (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) (centerX + 1), (short) centerY, (short) centerZ)) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) centerY, (short) (centerZ - 1))) &&
-                    currentGroup.contains(PosUtil.toInt((short) centerX, (short) centerY, (short) (centerZ + 1)));
-        }
-        return false;
-    }
+    private void convertToNormalized2DPlane() {
 
-    // Helper method to check right angles at the ends of the cross arms
-    private boolean checkRightAnglesAtEnds(int centerX, int centerY, int centerZ, int width, int height, int depth,
-                                           Axis ignoreAxis) {
-        // Check at each end of the cross for a right angle block going "right"
-        boolean valid = true;
-
-        if (ignoreAxis == Axis.X) {
-            // The cross is along the Y and Z axes
-            // Check on Y axis ends - right angle should go along the Z axis
-            valid &= checkRightAngle(centerX, centerY - height / 2, centerZ, Axis.Z);
-            valid &= checkRightAngle(centerX, centerY + height / 2, centerZ, Axis.Z);
-
-            // Check on Z axis ends - right angle should go along the Y axis
-            valid &= checkRightAngle(centerX, centerY, centerZ - depth / 2, Axis.Y);
-            valid &= checkRightAngle(centerX, centerY, centerZ + depth / 2, Axis.Y);
-        } else if (ignoreAxis == Axis.Y) {
-            // The cross is along the X and Z axes
-            // Check on X axis ends - right angle should go along the Z axis
-            valid &= checkRightAngle(centerX - width / 2, centerY, centerZ, Axis.Z);
-            valid &= checkRightAngle(centerX + width / 2, centerY, centerZ, Axis.Z);
-
-            // Check on Z axis ends - right angle should go along the X axis
-            valid &= checkRightAngle(centerX, centerY, centerZ - depth / 2, Axis.X);
-            valid &= checkRightAngle(centerX, centerY, centerZ + depth / 2, Axis.X);
-        } else if (ignoreAxis == Axis.Z) {
-            // The cross is along the X and Y axes
-            // Check on X axis ends - right angle should go along the Y axis
-            valid &= checkRightAngle(centerX - width / 2, centerY, centerZ, Axis.Y);
-            valid &= checkRightAngle(centerX + width / 2, centerY, centerZ, Axis.Y);
-
-            // Check on Y axis ends - right angle should go along the X axis
-            valid &= checkRightAngle(centerX, centerY - height / 2, centerZ, Axis.X);
-            valid &= checkRightAngle(centerX, centerY + height / 2, centerZ, Axis.X);
-        }
-
-        return valid;
-    }
-
-    // Helper method to check if there's a right angle at a specific position, based on the axis
-    private boolean checkRightAngle(int x, int y, int z, Axis axis) {
-        return switch (axis) {
-            case X ->
-                // Right angle along the X-axis means we check the block to the right (+X) of the current position
-                    currentGroup.contains(PosUtil.toInt((short) (x + 1), (short) y, (short) z)) || currentGroup.contains(PosUtil.toInt((short) (x - 1), (short) y, (short) z));
-            case Y ->
-                // Right angle along the Y-axis means we check the block above (+Y) or below (-Y)
-                    currentGroup.contains(PosUtil.toInt((short) x, (short) (y + 1), (short) z)) || currentGroup.contains(PosUtil.toInt((short) x, (short) (y - 1), (short) z));
-            case Z ->
-                // Right angle along the Z-axis means we check the block in front (+Z) or behind (-Z)
-                    currentGroup.contains(PosUtil.toInt((short) x, (short) y, (short) (z + 1))) || currentGroup.contains(PosUtil.toInt((short) x, (short) y, (short) (z - 1)));
-        };
     }
 
     private static class CarriedData {

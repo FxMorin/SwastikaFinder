@@ -33,7 +33,7 @@ public class Main {
     };
 
     public static void main(String[] args) {
-        /*System.out.println("Starting Swastica Finder...");
+        System.out.println("Starting Swastica Finder...");
         System.out.println("Finding with " + THREADS + " threads");
         System.out.println("Creating region");
         Region region = new Region();
@@ -42,7 +42,7 @@ public class Main {
         System.out.println("Test #2");
         test2(region);
         System.out.println("Test #3");
-        test3(region);*/
+        test3(region);
         //createSwastika2D(5, 0, 1, 1, false);  // Simple
         //createSwastika2D(11, 1, 2, 2, false); // Weird
         //createSwastika2D(11, 1, 4, 3, false); // Full
@@ -101,14 +101,17 @@ public class Main {
     }
 
     private static SubChunk createThickSwasticaChunk() {
+        boolean[][] grid = new boolean[6][6];
+        populateSwastika2D(grid, 0, 2, 1, false);
         SubChunk chunk = new SubChunk();
         byte blockId = (byte) 9;
         byte z = (byte) 7;
-        for (byte[] pos : swastica) {
-            chunk.setBlock((byte) (pos[0] + 2), (byte) (pos[1] + 1), z, blockId);
-        }
-        for (byte[] pos : swastica) {
-            chunk.setBlock((byte) (pos[0] + 3), (byte) (pos[1] + 2), z, blockId);
+        for (int x = 0; x < grid.length; x++) {
+            for (int y = 0; y < grid.length; y++) {
+                if (grid[x][y]) {
+                    chunk.setBlock((byte) (x + 2), (byte) (y + 1), z, blockId);
+                }
+            }
         }
         return chunk;
     }
