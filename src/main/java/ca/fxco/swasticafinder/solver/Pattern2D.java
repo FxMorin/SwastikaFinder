@@ -2,25 +2,18 @@ package ca.fxco.swasticafinder.solver;
 
 public class Pattern2D {
 
-    public static boolean solveSwastika2D(boolean[][] grid, int totalCount) { // get size
-        if (grid.length % 2 == 1) {
-            return solveOddSwastika2D(grid, totalCount);
-        } else {
-            return solveEvenSwastika2D(grid);
-        }
-    }
-
-    public static boolean solveOddSwastika2D(boolean[][] grid, int totalCount) {
+    public static boolean solveSwastika2D(boolean[][] grid, int totalCount) {
         // Setup values
-        int center = grid.length / 2;
+        int evenOffset = grid.length % 2 ^ 1;
+        int center = (grid.length / 2) - evenOffset;
 
         // Find Thickness
         int thickness = -1;
         int maxThickness = grid.length - 4;
         for (int g = 0; g < maxThickness; g++) {
-            if (!grid[center + g][center + g]) {
+            if (!grid[center + evenOffset + g][center + evenOffset + g]) {
                 // Test if this is an illegal thickness for an early exit
-                if (g == maxThickness - 1 && !grid[center + g + 1][center + g + 1]) {
+                if (g == maxThickness - 1 && grid[center + evenOffset + g + 1][center + evenOffset + g + 1]) {
                     return false;
                 }
                 thickness = g;
@@ -37,7 +30,7 @@ public class Pattern2D {
 
         // Find hook direction
         boolean reverseHook = true;
-        if (grid[0][center + thickness + 1]) {
+        if (grid[0][center + evenOffset + thickness + 1]) {
             if (grid[0][center - thickness - 1]) {
                 return false; // Hook is on both sides...
             }
@@ -57,7 +50,7 @@ public class Pattern2D {
                 }
             }
         } else {
-            for (int y = center + thickness + 2; y < grid.length; y++) {
+            for (int y = center + evenOffset + thickness + 2; y < grid.length; y++) {
                 if (grid[0][y]) {
                     hookHeight++;
                 } else {
@@ -67,7 +60,7 @@ public class Pattern2D {
         }
         // Find hook length
         int hookLength = 1;
-        int max = center + (thickness + 1) * (reverseHook ? -1 : 1);
+        int max = center + (reverseHook ? 0 : evenOffset) + (thickness + 1) * (reverseHook ? -1 : 1);
         for (int x = 1; x < max; x++) {
             if (grid[x][max]) {
                 hookLength++;
@@ -79,7 +72,7 @@ public class Pattern2D {
         // Check cross
         // Horizontal
         for (boolean[] line : grid) {
-            for (int y = center - thickness; y <= center + thickness; y++) {
+            for (int y = center - thickness; y <= center + evenOffset + thickness; y++) {
                 if (!line[y]) {
                     return false;
                 }
@@ -87,14 +80,14 @@ public class Pattern2D {
         }
         // Vertical - done in 2 steps to avoid checking the center positions again
         for (int y = 0; y < center - thickness; y++) { // top
-            for (int x = center - thickness; x <= center + thickness; x++) {
+            for (int x = center - thickness; x <= center + evenOffset + thickness; x++) {
                 if (!grid[x][y]) {
                     return false;
                 }
             }
         }
         for (int y = center + thickness; y < grid.length; y++) { // bottom
-            for (int x = center - thickness; x <= center + thickness; x++) {
+            for (int x = center - thickness; x <= center + evenOffset + thickness; x++) {
                 if (!grid[x][y]) {
                     return false;
                 }
@@ -102,7 +95,7 @@ public class Pattern2D {
         }
 
         // Check if area matches the total
-        int absThickness = (thickness * 2) + 1;
+        int absThickness = (thickness * 2) + 1 + evenOffset;
         int crossArea = grid.length * absThickness * 2 - absThickness * absThickness;
         int hookArea = hookHeight * hookLength * 4;
         if (crossArea + hookArea != totalCount) {
@@ -112,7 +105,7 @@ public class Pattern2D {
         // Check Hooks
         // Normal Top & Reverse Left hook
         for (int x = 0; x < hookLength; x++) {
-            for (int y = center + thickness; y <= (center + thickness) + hookHeight; y++) {
+            for (int y = center + evenOffset + thickness; y <= center + evenOffset + thickness + hookHeight; y++) {
                 if (!(reverseHook ? grid[y][x] : grid[x][y])) {
                     return false;
                 }
@@ -128,7 +121,7 @@ public class Pattern2D {
         }
         // Normal Bottom & Reverse Right hook
         for (int y = grid.length - hookLength; y < grid.length; y++) {
-            for (int x = center + thickness; x <= (center + thickness) + hookHeight; x++) {
+            for (int x = center + evenOffset + thickness; x <= center + evenOffset + thickness + hookHeight; x++) {
                 if (!(reverseHook ? grid[y][x] : grid[x][y])) {
                     return false;
                 }
@@ -145,9 +138,4 @@ public class Pattern2D {
 
         return true; // Valid swastika
     }
-
-    public static boolean solveEvenSwastika2D(boolean[][] group) {
-        return true;
-    }
-
 }

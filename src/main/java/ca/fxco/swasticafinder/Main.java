@@ -8,8 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
 
-    public static final int MAX_SWASTIKA_WIDTH = 4;
-    public static final int MAX_DEPTH = 1000 * MAX_SWASTIKA_WIDTH;
     public static final int CHUNK_AMOUNT = 4096;
     public static final int THREADS = Runtime.getRuntime().availableProcessors();
 
@@ -48,6 +46,7 @@ public class Main {
         //createSwastika2D(5, 0, 1, 1, false);  // Simple
         //createSwastika2D(11, 1, 2, 2, false); // Weird
         //createSwastika2D(11, 1, 4, 3, false); // Full
+        //createSwastika2D(6, 0, 1, 1, false);  // Simple Even
     }
 
     // Test against random data
@@ -117,9 +116,7 @@ public class Main {
     private static void createSwastika2D(int size, int thickness, int hookLength, int hookHeight,
                                          boolean reverseHook) {
         boolean[][] grid = new boolean[size][size];
-        if (size % 2 == 1) {
-            populateOddSwastika2D(grid, thickness, hookLength, hookHeight, reverseHook);
-        }
+        populateSwastika2D(grid, thickness, hookLength, hookHeight, reverseHook);
         for (boolean[] line : grid) {
             StringBuilder builder = new StringBuilder();
             for (boolean p : line) {
@@ -130,26 +127,27 @@ public class Main {
     }
 
     // This is basically the solve in reverse
-    public static void populateOddSwastika2D(boolean[][] grid, int thickness, int hookLength, int hookHeight,
-                                             boolean reverseHook) {
+    public static void populateSwastika2D(boolean[][] grid, int thickness, int hookLength, int hookHeight,
+                                          boolean reverseHook) {
         // Setup values
-        int center = grid.length / 2;
+        int oddOffset = grid.length % 2 ^ 1;
+        int center = (grid.length / 2) - oddOffset;
 
         // Create cross
         // Horizontal
         for (int x = 0; x < grid.length; x++) {
-            for (int y = center - thickness; y <= center + thickness; y++) {
+            for (int y = center - thickness; y <= center + oddOffset + thickness; y++) {
                 grid[x][y] = true;
             }
         }
         // Vertical - done in 2 steps to avoid checking the center positions again
         for (int y = 0; y <= center - thickness; y++) { // top
-            for (int x = center - thickness; x <= center + thickness; x++) {
+            for (int x = center - thickness; x <= center + oddOffset + thickness; x++) {
                 grid[x][y] = true;
             }
         }
-        for (int y = center + thickness; y < grid.length; y++) { // bottom
-            for (int x = center - thickness; x <= center + thickness; x++) {
+        for (int y = center + oddOffset + thickness; y < grid.length; y++) { // bottom
+            for (int x = center - thickness; x <= center + oddOffset + thickness; x++) {
                 grid[x][y] = true;
             }
         }
@@ -157,7 +155,7 @@ public class Main {
         // Create Hooks
         // Normal Top & Reverse Left hook
         for (int x = 0; x < hookHeight; x++) {
-            for (int y = center + thickness; y <= (center + thickness) + hookLength; y++) {
+            for (int y = center + oddOffset + thickness; y <= (center + oddOffset + thickness) + hookLength; y++) {
                 if (reverseHook) {
                     grid[y][x] = true;
                 } else {
@@ -177,7 +175,7 @@ public class Main {
         }
         // Normal Bottom & Reverse Right hook
         for (int y = grid.length - hookHeight; y < grid.length; y++) {
-            for (int x = center + thickness; x <= (center + thickness) + hookLength; x++) {
+            for (int x = center + oddOffset + thickness; x <= (center + oddOffset + thickness) + hookLength; x++) {
                 if (reverseHook) {
                     grid[y][x] = true;
                 } else {
