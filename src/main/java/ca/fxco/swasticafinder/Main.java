@@ -11,27 +11,6 @@ public class Main {
     public static final int CHUNK_AMOUNT = 4096;
     public static final int THREADS = Runtime.getRuntime().availableProcessors();
 
-    private static final byte[][] swastica = new byte[][] {
-            //x, y
-            {0, 4},
-            {0, 3},
-            {1, 3},
-            {2, 3},
-            {3, 3}, // center
-            {4, 3},
-            {5, 3},
-            {6, 3},
-            {6, 2}, // End of horizontal line
-            {2, 0},
-            {3, 0},
-            {3, 1},
-            {3, 2},
-            {3, 4},
-            {3, 5},
-            {3, 6},
-            {4, 6}
-    };
-
     public static void main(String[] args) {
         System.out.println("Starting Swastica Finder...");
         System.out.println("Finding with " + THREADS + " threads");
@@ -63,7 +42,10 @@ public class Main {
         Solver solver = new Solver();
         long start = System.nanoTime();
         solver.solve(region, new byte[]{9});
-        System.out.println("Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"); // 4096 blocks in a chunk
+        System.out.println(
+                "Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) +
+                "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"
+        ); // 4096 blocks in a chunk
     }
 
     public static void test3(Region region) {
@@ -72,7 +54,10 @@ public class Main {
         Solver solver = new Solver();
         long start = System.nanoTime();
         solver.solve(region, new byte[]{9});
-        System.out.println("Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"); // 4096 blocks in a chunk
+        System.out.println(
+                "Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) +
+                "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"
+        ); // 4096 blocks in a chunk
     }
 
     public static void test99(Region region) {
@@ -87,15 +72,24 @@ public class Main {
         Solver solver = new Solver();
         long start = System.nanoTime();
         solver.solve(region, new byte[]{9});
-        System.out.println("Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"); // 4096 blocks in a chunk
+        System.out.println(
+                "Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) +
+                "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"
+        ); // 4096 blocks in a chunk
     }
 
     private static SubChunk createSwasticaChunk() {
         SubChunk chunk = new SubChunk();
         byte blockId = (byte) 9;
         byte z = (byte) 7;
-        for (byte[] pos : swastica) {
-            chunk.setBlock((byte) (pos[0] + 2), (byte) (pos[1] + 1), z, blockId);
+        boolean[][] grid = new boolean[5][5];
+        populateSwastika2D(grid, 0, 1, 1, false);
+        for (int x = 0; x < grid.length; x++) {
+            for (int y = 0; y < grid.length; y++) {
+                if (grid[x][y]) {
+                    chunk.setBlock((byte) (x + 2), (byte) (y + 1), z, blockId);
+                }
+            }
         }
         return chunk;
     }
