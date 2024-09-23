@@ -6,6 +6,8 @@ import java.util.Random;
 
 /**
  * Region data is a 16x16x16 array of SubChunks
+ *
+ * @author FX
  */
 public class Region {
 

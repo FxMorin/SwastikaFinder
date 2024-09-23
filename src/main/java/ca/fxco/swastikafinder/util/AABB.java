@@ -1,5 +1,10 @@
 package ca.fxco.swastikafinder.util;
 
+/**
+ * Bare Bones AABB class
+ *
+ * @author FX
+ */
 public class AABB {
 
     private int minX;

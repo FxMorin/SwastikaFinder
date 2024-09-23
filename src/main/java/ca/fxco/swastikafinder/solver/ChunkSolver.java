@@ -149,10 +149,6 @@ public class ChunkSolver {
         }
     }
 
-    private void convertToNormalized2DPlane() {
-
-    }
-
     private static class CarriedData {
 
         private final int key;

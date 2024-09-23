@@ -4,6 +4,8 @@ import java.util.Random;
 
 /**
  * SubChunk data is a 16x16x16 array of bytes
+ *
+ * @author FX
  */
 public class SubChunk {
 

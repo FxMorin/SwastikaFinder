@@ -1,5 +1,10 @@
 package ca.fxco.swastikafinder.util;
 
+/**
+ * Basic Bitwise bit packing util
+ *
+ * @author FX
+ */
 public class PosUtil {
 
     // Region position

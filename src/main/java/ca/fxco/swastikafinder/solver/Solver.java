@@ -6,6 +6,12 @@ import ca.fxco.swastikafinder.chunk.SubChunk;
 
 import java.util.ArrayList;
 
+/**
+ * Solves for a pattern within a {@link Region}.
+ * This is multithreaded to account for lookup costs when used in other systems.
+ *
+ * @author FX
+ */
 public class Solver {
 
     public void solve(Region region, byte[] blockIds) {

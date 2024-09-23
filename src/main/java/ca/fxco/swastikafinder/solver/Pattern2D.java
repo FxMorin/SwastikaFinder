@@ -1,5 +1,10 @@
 package ca.fxco.swastikafinder.solver;
 
+/**
+ * Solves swastika's of any size within a 2D Plane.
+ *
+ * @author FX
+ */
 public class Pattern2D {
 
     public static boolean solveSwastika2D(boolean[][] grid, int totalCount) {

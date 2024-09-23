@@ -3,7 +3,7 @@ import ca.fxco.swastikafinder.solver.Pattern2D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class Test2DSolver {
+public class Solver2DTest {
 
     @Test
     public void testSolveSimplestOdd() {

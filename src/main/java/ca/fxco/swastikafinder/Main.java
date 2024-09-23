@@ -6,6 +6,9 @@ import ca.fxco.swastikafinder.solver.Solver;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A simple swastika solver
+ */
 public class Main {
 
     public static final int CHUNK_AMOUNT = 4096;
