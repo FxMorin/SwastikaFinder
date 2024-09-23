@@ -16,20 +16,17 @@ public class Solver {
         int currentId = 0;
         for (byte x = 0; x < 16; x++) {
             short startX = (short) (x << 4);
-            for (byte y = 0; y < 16; y++) {
-                short startY = (short) (y << 4);
-                for (byte z = 0; z < 16; z++) {
-                    short startZ = (short) (z << 4);
-                    ThreadedSolver thread = threads.get(currentId++);
-                    thread.setup(region.getChunk(x, y, z), startX, startY, startZ, blockIds);
-                    thread.smartStart();
-                    if (currentId >= Main.THREADS) {
-                        currentId = 0;
-                        for (ThreadedSolver thread2 : threads) {
-                            try {
-                                thread2.join();
-                            } catch (InterruptedException ignored) {}
-                        }
+            for (byte z = 0; z < 16; z++) {
+                short startZ = (short) (z << 4);
+                ThreadedSolver thread = threads.get(currentId++);
+                thread.setup(x, z, startX, startZ, blockIds);
+                thread.smartStart();
+                if (currentId >= Main.THREADS) {
+                    currentId = 0;
+                    for (ThreadedSolver thread2 : threads) {
+                        try {
+                            thread2.join();
+                        } catch (InterruptedException ignored) {}
                     }
                 }
             }
@@ -40,9 +37,9 @@ public class Solver {
 
         private final ChunkSolver chunkSolver = new ChunkSolver();
         private final Region region;
-        private SubChunk chunk;
+        private byte x;
+        private byte z;
         private short startX;
-        private short startY;
         private short startZ;
         private byte[] blockIds;
         private volatile boolean hasStarted = false;
@@ -51,10 +48,10 @@ public class Solver {
             this.region = region;
         }
 
-        public void setup(SubChunk chunk, short startX, short startY, short startZ, byte[] blockIds) {
-            this.chunk = chunk;
+        public void setup(byte x, byte z, short startX, short startZ, byte[] blockIds) {
+            this.x = x;
+            this.z = z;
             this.startX = startX;
-            this.startY = startY;
             this.startZ = startZ;
             this.blockIds = blockIds;
         }
@@ -64,9 +61,13 @@ public class Solver {
                 hasStarted = true;
                 this.start();
             }
-            for (byte blockId : blockIds) {
-                if (chunk.doesPaletteContain(blockId)) {
-                    chunkSolver.solveChunk(region, startX, startY, startZ, blockId);
+            for (byte y = 0; y < 16; y++) {
+                short startY = (short) (y << 4);
+                SubChunk chunk = region.getChunk(x, y, z);
+                for (byte blockId : blockIds) {
+                    if (chunk.doesPaletteContain(blockId)) {
+                        chunkSolver.solveChunk(region, startX, startY, startZ, blockId);
+                    }
                 }
             }
         }
