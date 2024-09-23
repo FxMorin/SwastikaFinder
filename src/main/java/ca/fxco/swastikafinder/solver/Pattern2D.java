@@ -1,4 +1,4 @@
-package ca.fxco.swasticafinder.solver;
+package ca.fxco.swastikafinder.solver;
 
 public class Pattern2D {
 

@@ -1,11 +1,10 @@
-package ca.fxco.swasticafinder.solver;
+package ca.fxco.swastikafinder.solver;
 
-import ca.fxco.swasticafinder.chunk.Region;
-import ca.fxco.swasticafinder.chunk.SubChunk;
-import ca.fxco.swasticafinder.util.AABB;
-import ca.fxco.swasticafinder.util.Axis;
-import ca.fxco.swasticafinder.util.Direction;
-import ca.fxco.swasticafinder.util.PosUtil;
+import ca.fxco.swastikafinder.chunk.Region;
+import ca.fxco.swastikafinder.chunk.SubChunk;
+import ca.fxco.swastikafinder.util.AABB;
+import ca.fxco.swastikafinder.util.Direction;
+import ca.fxco.swastikafinder.util.PosUtil;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 

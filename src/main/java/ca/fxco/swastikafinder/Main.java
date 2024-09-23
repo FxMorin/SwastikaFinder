@@ -1,8 +1,8 @@
-package ca.fxco.swasticafinder;
+package ca.fxco.swastikafinder;
 
-import ca.fxco.swasticafinder.chunk.Region;
-import ca.fxco.swasticafinder.chunk.SubChunk;
-import ca.fxco.swasticafinder.solver.Solver;
+import ca.fxco.swastikafinder.chunk.Region;
+import ca.fxco.swastikafinder.chunk.SubChunk;
+import ca.fxco.swastikafinder.solver.Solver;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,7 +12,7 @@ public class Main {
     public static final int THREADS = Runtime.getRuntime().availableProcessors();
 
     public static void main(String[] args) {
-        System.out.println("Starting Swastica Finder...");
+        System.out.println("Starting Swastika Finder...");
         System.out.println("Finding with " + THREADS + " threads");
         System.out.println("Creating region");
         Region region = new Region();
@@ -35,10 +35,10 @@ public class Main {
         solver.solve(region, new byte[]{9});
     }
 
-    // There is a swastica in this mess, find it
+    // There is a swastika in this mess, find it
     public static void test2(Region region) {
         region.populate();
-        region.setChunk((byte) 12, (byte) 3, (byte) 8, createSwasticaChunk());
+        region.setChunk((byte) 12, (byte) 3, (byte) 8, createSwastikaChunk());
         Solver solver = new Solver();
         long start = System.nanoTime();
         solver.solve(region, new byte[]{9});
@@ -50,7 +50,7 @@ public class Main {
 
     public static void test3(Region region) {
         region.populate();
-        region.setChunk((byte) 9, (byte) 12, (byte) 14, createThickSwasticaChunk());
+        region.setChunk((byte) 9, (byte) 12, (byte) 14, createThickSwastikaChunk());
         Solver solver = new Solver();
         long start = System.nanoTime();
         solver.solve(region, new byte[]{9});
@@ -61,11 +61,11 @@ public class Main {
     }
 
     public static void test99(Region region) {
-        SubChunk swasticaChunk = createSwasticaChunk();
+        SubChunk swastikaChunk = createSwastikaChunk();
         for (byte x = 0; x < 16; x++) {
             for (byte y = 0; y < 16; y++) {
                 for (byte z = 0; z < 16; z++) {
-                    region.setChunk(x, y, z, swasticaChunk);
+                    region.setChunk(x, y, z, swastikaChunk);
                 }
             }
         }
@@ -78,7 +78,7 @@ public class Main {
         ); // 4096 blocks in a chunk
     }
 
-    private static SubChunk createSwasticaChunk() {
+    private static SubChunk createSwastikaChunk() {
         SubChunk chunk = new SubChunk();
         byte blockId = (byte) 9;
         byte z = (byte) 7;
@@ -94,7 +94,7 @@ public class Main {
         return chunk;
     }
 
-    private static SubChunk createThickSwasticaChunk() {
+    private static SubChunk createThickSwastikaChunk() {
         boolean[][] grid = new boolean[6][6];
         populateSwastika2D(grid, 0, 2, 1, false);
         SubChunk chunk = new SubChunk();

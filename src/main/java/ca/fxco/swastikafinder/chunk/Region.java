@@ -1,6 +1,6 @@
-package ca.fxco.swasticafinder.chunk;
+package ca.fxco.swastikafinder.chunk;
 
-import ca.fxco.swasticafinder.util.PosUtil;
+import ca.fxco.swastikafinder.util.PosUtil;
 
 import java.util.Random;
 

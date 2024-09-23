@@ -1,4 +1,4 @@
-package ca.fxco.swasticafinder.chunk;
+package ca.fxco.swastikafinder.chunk;
 
 import java.util.Random;
 

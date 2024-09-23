@@ -1,5 +1,5 @@
-import ca.fxco.swasticafinder.Main;
-import ca.fxco.swasticafinder.solver.Pattern2D;
+import ca.fxco.swastikafinder.Main;
+import ca.fxco.swastikafinder.solver.Pattern2D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

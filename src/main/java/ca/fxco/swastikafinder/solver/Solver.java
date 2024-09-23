@@ -1,8 +1,8 @@
-package ca.fxco.swasticafinder.solver;
+package ca.fxco.swastikafinder.solver;
 
-import ca.fxco.swasticafinder.Main;
-import ca.fxco.swasticafinder.chunk.Region;
-import ca.fxco.swasticafinder.chunk.SubChunk;
+import ca.fxco.swastikafinder.Main;
+import ca.fxco.swastikafinder.chunk.Region;
+import ca.fxco.swastikafinder.chunk.SubChunk;
 
 import java.util.ArrayList;
 

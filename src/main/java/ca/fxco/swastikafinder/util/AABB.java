@@ -1,4 +1,4 @@
-package ca.fxco.swasticafinder.util;
+package ca.fxco.swastikafinder.util;
 
 public class AABB {
 
