@@ -45,4 +45,9 @@ public class Region {
     public byte getBlock(int pos) {
         return getBlock(PosUtil.getX(pos), PosUtil.getY(pos), PosUtil.getZ(pos));
     }
+
+    public void setBlock(short x, short y, short z, byte blockId) {
+        getChunk((byte) (x >> 4), (byte) (y >> 4), (byte) (z >> 4))
+                .setBlock((byte) (x & 15), (byte) (y & 15), (byte) (z & 15), blockId);
+    }
 }

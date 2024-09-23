@@ -19,6 +19,8 @@ import java.util.Queue;
  */
 public class ChunkSolver {
 
+    private static final int SMALLEST_POSSIBLE_SWASTIKA = 13;
+
     private final Queue<CarriedData> queue = new ArrayDeque<>();
     private final IntSet positions = new IntOpenHashSet(40);
     private final IntSet currentGroup = new IntOpenHashSet(18);
@@ -33,7 +35,7 @@ public class ChunkSolver {
         for (short x = startX; x < chunkMaxX; x++) {
             for (short y = startY; y < chunkMaxY; y++) {
                 for (short z = startZ; z < chunkMaxZ; z++) {
-                    if (optimizedBFT(region, x, y, z, blockId) > 12) {
+                    if (optimizedBFT(region, x, y, z, blockId) >= SMALLEST_POSSIBLE_SWASTIKA) {
                         analyzeGroup();
                     }
                 }
@@ -110,6 +112,7 @@ public class ChunkSolver {
                 bounds.include(nextX, nextY, nextZ);
             }
         }
+
         if (bounds != null) {
             int width = bounds.getWidth();
             int height = bounds.getHeight();

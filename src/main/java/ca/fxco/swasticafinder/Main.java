@@ -35,7 +35,7 @@ public class Main {
     };
 
     public static void main(String[] args) {
-        System.out.println("Starting Swastica Finder...");
+        /*System.out.println("Starting Swastica Finder...");
         System.out.println("Finding with " + THREADS + " threads");
         System.out.println("Creating region");
         Region region = new Region();
@@ -43,12 +43,11 @@ public class Main {
         test1(region);
         System.out.println("Test #2");
         test2(region);
-        //for (int i = 0; i < 50; i++) {
-        //    test2(region);
-        //}
-        //test2(region);
-        //System.out.println("Test #3");
-        //test3(region);
+        System.out.println("Test #3");
+        test3(region);*/
+        //createSwastika2D(5, 0, 1, 1, false);  // Simple
+        //createSwastika2D(11, 1, 2, 2, false); // Weird
+        //createSwastika2D(11, 1, 4, 3, false); // Full
     }
 
     // Test against random data
@@ -69,6 +68,15 @@ public class Main {
     }
 
     public static void test3(Region region) {
+        region.populate();
+        region.setChunk((byte) 9, (byte) 12, (byte) 14, createThickSwasticaChunk());
+        Solver solver = new Solver();
+        long start = System.nanoTime();
+        solver.solve(region, new byte[]{9});
+        System.out.println("Solver took " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + "ms to scan " + (CHUNK_AMOUNT * 4096) + " blocks in " + CHUNK_AMOUNT + " chunks"); // 4096 blocks in a chunk
+    }
+
+    public static void test99(Region region) {
         SubChunk swasticaChunk = createSwasticaChunk();
         for (byte x = 0; x < 16; x++) {
             for (byte y = 0; y < 16; y++) {
@@ -91,5 +99,102 @@ public class Main {
             chunk.setBlock((byte) (pos[0] + 2), (byte) (pos[1] + 1), z, blockId);
         }
         return chunk;
+    }
+
+    private static SubChunk createThickSwasticaChunk() {
+        SubChunk chunk = new SubChunk();
+        byte blockId = (byte) 9;
+        byte z = (byte) 7;
+        for (byte[] pos : swastica) {
+            chunk.setBlock((byte) (pos[0] + 2), (byte) (pos[1] + 1), z, blockId);
+        }
+        for (byte[] pos : swastica) {
+            chunk.setBlock((byte) (pos[0] + 3), (byte) (pos[1] + 2), z, blockId);
+        }
+        return chunk;
+    }
+
+    private static void createSwastika2D(int size, int thickness, int hookLength, int hookHeight,
+                                         boolean reverseHook) {
+        boolean[][] grid = new boolean[size][size];
+        if (size % 2 == 1) {
+            populateOddSwastika2D(grid, thickness, hookLength, hookHeight, reverseHook);
+        }
+        for (boolean[] line : grid) {
+            StringBuilder builder = new StringBuilder();
+            for (boolean p : line) {
+                builder.append(p ? "#" : " ");
+            }
+            System.out.println(builder);
+        }
+    }
+
+    // This is basically the solve in reverse
+    public static void populateOddSwastika2D(boolean[][] grid, int thickness, int hookLength, int hookHeight,
+                                             boolean reverseHook) {
+        // Setup values
+        int center = grid.length / 2;
+
+        // Create cross
+        // Horizontal
+        for (int x = 0; x < grid.length; x++) {
+            for (int y = center - thickness; y <= center + thickness; y++) {
+                grid[x][y] = true;
+            }
+        }
+        // Vertical - done in 2 steps to avoid checking the center positions again
+        for (int y = 0; y <= center - thickness; y++) { // top
+            for (int x = center - thickness; x <= center + thickness; x++) {
+                grid[x][y] = true;
+            }
+        }
+        for (int y = center + thickness; y < grid.length; y++) { // bottom
+            for (int x = center - thickness; x <= center + thickness; x++) {
+                grid[x][y] = true;
+            }
+        }
+
+        // Create Hooks
+        // Normal Top & Reverse Left hook
+        for (int x = 0; x < hookHeight; x++) {
+            for (int y = center + thickness; y <= (center + thickness) + hookLength; y++) {
+                if (reverseHook) {
+                    grid[y][x] = true;
+                } else {
+                    grid[x][y] = true;
+                }
+            }
+        }
+        // Normal Left & Reverse Top hook
+        for (int y = 0; y < hookHeight; y++) {
+            for (int x = (center - thickness) - hookLength; x <= center - thickness; x++) {
+                if (reverseHook) {
+                    grid[y][x] = true;
+                } else {
+                    grid[x][y] = true;
+                }
+            }
+        }
+        // Normal Bottom & Reverse Right hook
+        for (int y = grid.length - hookHeight; y < grid.length; y++) {
+            for (int x = center + thickness; x <= (center + thickness) + hookLength; x++) {
+                if (reverseHook) {
+                    grid[y][x] = true;
+                } else {
+                    boolean[] xx = grid[x];
+                    xx[y] = true;
+                }
+            }
+        }
+        // Normal Right & Reverse Bottom hook
+        for (int x = grid.length - hookHeight; x < grid.length; x++) {
+            for (int y = (center - thickness) - hookLength; y <= center - thickness; y++) {
+                if (reverseHook) {
+                    grid[y][x] = true;
+                } else {
+                    grid[x][y] = true;
+                }
+            }
+        }
     }
 }
